@@ -1,0 +1,1630 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Check List Vehicular Diario</title>
+<style>
+  :root{ --rojo:#D3222A; --rojo-osc:#A81820; --gris:#4a4a4a; --linea:#c9c9c9;
+         --ok:#1e7d34; --no:#c62828; --bg:#eef0f2; }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;font-family:Arial,Helvetica,sans-serif;color:#1c1c1c;background:var(--bg);}
+  .wrap{max-width:820px;margin:0 auto;background:#fff;}
+
+  .aviso{background:#fff8e1;border-bottom:1px solid #e6d38a;padding:12px 16px;font-size:13px;line-height:1.45;color:#5b4b12;}
+  .aviso b{color:#7a5c00;}
+  .cabecera{border:2px solid #000;border-bottom:none;padding:10px 12px;text-align:center;background:#fff;}
+  .cabecera .t{color:var(--rojo);font-weight:bold;font-size:17px;letter-spacing:.3px;line-height:1.2;}
+  .cabecera .s{font-size:11px;color:#666;margin-top:3px;}
+
+  .meta{display:grid;grid-template-columns:1fr 1fr;border:2px solid #000;border-top:none;border-bottom:none;}
+  .meta .celda{border-right:1px solid #000;border-bottom:1px solid #000;padding:6px 8px;}
+  .meta .celda:nth-child(2n){border-right:none;}
+  .meta label{font-weight:bold;display:block;margin-bottom:3px;color:var(--gris);font-size:11px;text-transform:uppercase;}
+  .meta input{width:100%;border:none;border-bottom:1px solid var(--linea);font-size:15px;padding:5px 2px;outline:none;background:transparent;font-family:inherit;}
+  .meta input:focus{border-bottom:2px solid var(--rojo);}
+  .meta input[readonly]{background:#f5f5f5;color:#333;font-weight:bold;}
+
+  .secc{background:#222;color:#fff;text-align:center;font-weight:bold;font-size:13px;padding:8px;
+        border-left:2px solid #000;border-right:2px solid #000;letter-spacing:.3px;}
+
+  .items{border:2px solid #000;border-top:none;}
+  .item{border-bottom:1px solid var(--linea);padding:8px 10px;}
+  .item:last-child{border-bottom:none;}
+  .item .fila{display:grid;grid-template-columns:1fr 150px;align-items:center;gap:8px;}
+  .item .txt{font-size:13px;line-height:1.3;}
+  .item .txt .num{font-weight:bold;color:var(--rojo);min-width:22px;display:inline-block;}
+  .opts{display:flex;gap:5px;}
+  .opts .o{flex:1;text-align:center;border:1.5px solid #bbb;border-radius:5px;padding:9px 2px;font-size:11px;
+           font-weight:bold;color:#888;cursor:pointer;user-select:none;background:#fafafa;line-height:1.1;}
+  .opts .o.sel[data-v="C"]{background:var(--ok);color:#fff;border-color:var(--ok);}
+  .opts .o.sel[data-v="N"]{background:var(--no);color:#fff;border-color:var(--no);}
+  .item.pendiente{background:#fff5f5;}
+  .item .com{display:none;margin-top:8px;}
+  .item.conN .com{display:block;}
+  .item .com input{width:100%;border:1px solid var(--no);border-radius:5px;padding:8px;font-size:13px;
+                   font-family:inherit;outline:none;background:#fffafa;}
+
+  .bloque{border:2px solid #000;border-top:none;padding:12px;}
+  .bloque h3{margin:0 0 7px;font-size:12px;color:var(--gris);text-transform:uppercase;letter-spacing:.5px;}
+  textarea{width:100%;min-height:58px;border:1px solid var(--linea);border-radius:5px;padding:8px;
+           font-family:inherit;font-size:13px;resize:vertical;outline:none;}
+  textarea:focus{border-color:var(--rojo);}
+  .campo{margin-bottom:10px;}
+  .campo label{font-weight:bold;display:block;margin-bottom:3px;color:var(--gris);font-size:11px;text-transform:uppercase;}
+  .campo input{width:100%;border:1px solid var(--linea);border-radius:5px;padding:9px;font-size:15px;font-family:inherit;outline:none;}
+  .campo input:focus{border-color:var(--rojo);}
+  .dos{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+
+  /* medidor de combustible */
+  .gauge-wrap{text-align:center;}
+  .gauge-wrap canvas{width:230px;max-width:100%;height:auto;}
+  .gauge-lbl{font-size:13px;font-weight:bold;color:var(--rojo);margin-top:2px;}
+  input[type=range]{width:100%;margin-top:6px;accent-color:var(--rojo);height:30px;}
+  .gauge-marcas{display:flex;justify-content:space-between;font-size:10px;color:#777;margin-top:-2px;}
+
+  .foto-box input[type=file]{display:none;}
+  .btn-foto{display:block;text-align:center;border:2px dashed var(--rojo);color:var(--rojo);border-radius:8px;
+            padding:15px;font-weight:bold;font-size:14px;cursor:pointer;background:#fff5f5;}
+  .foto-prev{margin-top:8px;text-align:center;}
+  .foto-prev img{max-width:100%;max-height:230px;border-radius:6px;border:1px solid var(--linea);}
+  .galeria{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;margin-top:10px;}
+  .galeria .gi{position:relative;border:1px solid var(--linea);border-radius:6px;overflow:hidden;}
+  .galeria .gi img{width:100%;height:95px;object-fit:cover;display:block;}
+  .galeria .gi .x{position:absolute;top:3px;right:3px;background:rgba(198,40,40,.92);color:#fff;border:none;
+                  border-radius:50%;width:24px;height:24px;font-size:15px;line-height:1;cursor:pointer;font-weight:bold;}
+
+  .sino{display:flex;gap:10px;margin-top:4px;}
+  .sino .s{flex:1;text-align:center;border:2px solid #999;border-radius:7px;padding:13px 4px;font-size:14px;
+           font-weight:bold;color:#666;cursor:pointer;background:#fafafa;}
+  .sino .s.sel[data-v="SI"]{background:var(--no);color:#fff;border-color:var(--no);}
+  .sino .s.sel[data-v="NO"]{background:var(--ok);color:#fff;border-color:var(--ok);}
+  .danos-fotos{display:none;margin-top:12px;}
+  .danos-fotos.on{display:block;}
+  .refer{font-size:11px;color:#777;text-align:center;margin-top:8px;line-height:1.4;}
+  .diagrama{text-align:center;margin-top:10px;}
+  .diagrama canvas{max-width:320px;width:100%;height:auto;}
+
+  /* firma electronica */
+  .btn-firmar{display:block;width:100%;text-align:center;border:2px solid var(--rojo);color:var(--rojo);
+              border-radius:8px;padding:13px;font-weight:bold;font-size:14px;cursor:pointer;background:#fff5f5;}
+  .firma-ok{display:none;border:1px solid var(--ok);background:#f1f8f2;border-radius:8px;padding:10px;
+            margin-top:4px;}
+  .firma-ok.on{display:block;}
+  .firma-ok .fila{display:flex;gap:12px;align-items:center;}
+  .firma-ok canvas{width:96px;height:96px;border:1px solid #cfd8cf;background:#fff;flex:0 0 auto;}
+  .firma-ok .datos{font-size:11.5px;line-height:1.5;color:#1b5e20;}
+  .firma-ok .datos b{display:block;font-size:13px;color:#145c20;}
+  .firma-ok .rehacer{font-size:11px;color:var(--rojo);cursor:pointer;text-decoration:underline;margin-top:6px;display:inline-block;}
+
+  .acciones{padding:16px;background:var(--bg);position:sticky;bottom:0;border-top:1px solid #ddd;}
+  .generar{width:100%;background:var(--rojo);color:#fff;border:none;border-radius:10px;padding:16px;
+           font-size:16px;font-weight:bold;cursor:pointer;box-shadow:0 3px 8px rgba(211,34,42,.3);}
+  .generar:active{background:var(--rojo-osc);}
+  .err{color:var(--no);font-size:13px;text-align:center;margin-top:9px;min-height:18px;font-weight:bold;line-height:1.4;}
+  #impreso{display:none;}
+  @media print{
+    @page{size:A4 portrait;margin:8mm;}
+    body{background:#fff;}
+    .aviso,.cabecera,.meta,.secc,.items,.bloque,.acciones,#diag,#restaurado{display:none !important;}
+    #impreso{display:block !important;}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="aviso">
+    <b>Conductor:</b> completa la revisión de <b>salida</b>, registra el <b>kilometraje con su foto</b> y el
+    <b>nivel de combustible</b>, firma, y al <b>regreso</b> completa la hora, el KM final y el estado del vehículo.
+    Luego toca <b>“Generar y compartir PDF”</b> y envíalo al grupo de Logística.
+    <div style="margin-top:6px">Lo que llenes <b>se guarda solo en este celular</b>: puedes cerrar la página
+    al salir y retomarla al regresar.</div>
+  </div>
+
+  <div id="restaurado" style="display:none;background:#e8f5e9;border-bottom:1px solid #a5d6a7;
+       padding:10px 16px;font-size:13px;color:#1b5e20;line-height:1.4;">
+    ✓ Se recuperó la revisión de salida que llenaste antes. Continúa con los datos de llegada.
+  </div>
+
+  <div id="diag" style="background:#eceff1;border-bottom:1px solid #cfd8dc;padding:7px 16px;
+       font-size:11px;color:#455a64;font-family:monospace;line-height:1.5;">Verificando…</div>
+  <div id="fatal" style="display:none;background:#ffebee;border-bottom:2px solid #c62828;
+       padding:10px 16px;font-size:12px;color:#b71c1c;line-height:1.45;font-family:monospace;"></div>
+
+  <div class="cabecera">
+    <div class="t">CHECK LIST — INSPECCIÓN DIARIA DE VEHÍCULOS</div>
+    <div class="s">Check List Diario</div>
+  </div>
+
+  <div class="meta">
+    <div class="celda"><label>CEDIS</label><input id="cedis" type="text" value="Santo Domingo" readonly></div>
+    <div class="celda"><label>Fecha</label><input id="fecha" type="date"></div>
+    <div class="celda"><label># de Placa</label><input id="placa" type="text" placeholder="GSR-3205" style="text-transform:uppercase"></div>
+    <div class="celda"><label># de Ruta</label><input id="ruta" type="text" placeholder="San Jacinto - Valle Hermoso"></div>
+    <div class="celda"><label>Hora de Salida</label><input id="hsal" type="time"></div>
+    <div class="celda"><label>KM de Salida</label><input id="kmsal" type="number" inputmode="numeric" placeholder="255820"></div>
+  </div>
+
+  <div class="bloque">
+    <h3>Respaldo del kilometraje de salida</h3>
+    <div class="foto-box">
+      <label class="btn-foto" for="fotoKmSal">📷 Foto del odómetro (salida)</label>
+      <input id="fotoKmSal" type="file" accept="image/*" capture="environment">
+      <div class="foto-prev" id="prevKmSal"></div>
+    </div>
+  </div>
+
+  <div class="bloque">
+    <h3>Nivel de combustible — salida</h3>
+    <div class="gauge-wrap">
+      <canvas id="gSal" width="460" height="264"></canvas>
+      <div class="gauge-lbl" id="gSalTxt">½</div>
+    </div>
+    <input type="range" id="combSal" min="0" max="100" step="5" value="50">
+    <div class="gauge-marcas"><span>E</span><span>¼</span><span>½</span><span>¾</span><span>F</span></div>
+  </div>
+
+  <div class="secc">REVISIÓN AL VEHÍCULO PREVIO A SU SALIDA — BÁSICOS</div>
+  <div class="items" id="items"></div>
+
+  <div class="bloque">
+    <h3>Comentarios sobre lo revisado (salida)</h3>
+    <textarea id="obsSal" placeholder="Novedades encontradas antes de salir..."></textarea>
+  </div>
+
+  <div class="bloque">
+    <h3>Conductor — firma electrónica</h3>
+    <div class="dos">
+      <div class="campo"><label>Nombre del conductor</label><input id="conductor" type="text" placeholder="Nombre y apellido"></div>
+      <div class="campo"><label>C.I.</label><input id="ciCond" type="text" inputmode="numeric" placeholder="Cédula"></div>
+    </div>
+    <div class="btn-firmar" id="btnFirmaCond">✍ Firmar electrónicamente</div>
+    <div class="firma-ok" id="okCond">
+      <div class="fila">
+        <canvas id="qrCond" width="96" height="96"></canvas>
+        <div class="datos" id="datosCond"></div>
+      </div>
+      <span class="rehacer" data-rol="cond">Anular y firmar de nuevo</span>
+    </div>
+  </div>
+
+  <div class="secc">REVISIÓN AL VEHÍCULO A SU LLEGADA</div>
+
+  <div class="meta" style="border-top:none">
+    <div class="celda"><label>Hora de Entrada</label><input id="hent" type="time"></div>
+    <div class="celda"><label>KM de Llegada</label><input id="kment" type="number" inputmode="numeric" placeholder="255985"></div>
+  </div>
+
+  <div class="bloque">
+    <h3>Respaldo del kilometraje de llegada</h3>
+    <div class="foto-box">
+      <label class="btn-foto" for="fotoKmEnt">📷 Foto del odómetro (llegada)</label>
+      <input id="fotoKmEnt" type="file" accept="image/*" capture="environment">
+      <div class="foto-prev" id="prevKmEnt"></div>
+    </div>
+    <div class="refer" id="recorrido"></div>
+  </div>
+
+  <div class="bloque">
+    <h3>Nivel de combustible — llegada</h3>
+    <div class="gauge-wrap">
+      <canvas id="gEnt" width="460" height="264"></canvas>
+      <div class="gauge-lbl" id="gEntTxt">½</div>
+    </div>
+    <input type="range" id="combEnt" min="0" max="100" step="5" value="50">
+    <div class="gauge-marcas"><span>E</span><span>¼</span><span>½</span><span>¾</span><span>F</span></div>
+  </div>
+
+  <div class="bloque">
+    <h3>Rayones, golpes o roturas</h3>
+    <div style="font-size:13px;line-height:1.4;margin-bottom:8px">
+      ¿El vehículo presenta <b>rayones, golpes o roturas</b>?
+    </div>
+    <div class="sino">
+      <div class="s" data-v="SI">SÍ APLICA</div>
+      <div class="s" data-v="NO">NO APLICA</div>
+    </div>
+    <div class="danos-fotos" id="danosFotos">
+      <div class="foto-box">
+        <label class="btn-foto" for="fotoDanos">📷 Agregar foto(s) del daño</label>
+        <input id="fotoDanos" type="file" accept="image/*" capture="environment" multiple>
+      </div>
+      <div class="galeria" id="galDanos"></div>
+      <div class="refer">Puedes agregar varias fotos. Toca el botón otra vez para añadir más.</div>
+    </div>
+    <div class="diagrama">
+      <canvas id="diagCv" width="680" height="328"></canvas>
+      <div class="refer">Referencia del formato: RAYONES = / &nbsp; GOLPES = O &nbsp; ROTURAS = X</div>
+    </div>
+  </div>
+
+  <div class="bloque">
+    <h3>Comentarios sobre lo revisado (llegada)</h3>
+    <textarea id="obsLle" placeholder="Novedades encontradas al regresar..."></textarea>
+  </div>
+
+  <div class="bloque">
+    <h3>Receptor — firma electrónica</h3>
+    <div class="dos">
+      <div class="campo"><label>Nombre del receptor</label><input id="receptor" type="text" value="GUSTAVO PERALTA"></div>
+      <div class="campo"><label>C.I.</label><input id="ciRec" type="text" inputmode="numeric" value="1720945623"></div>
+    </div>
+    <div class="btn-firmar" id="btnFirmaRec">✍ Firmar electrónicamente</div>
+    <div class="firma-ok" id="okRec">
+      <div class="fila">
+        <canvas id="qrRec" width="96" height="96"></canvas>
+        <div class="datos" id="datosRec"></div>
+      </div>
+      <span class="rehacer" data-rol="rec">Anular y firmar de nuevo</span>
+    </div>
+  </div>
+
+  <div class="acciones">
+    <button class="generar" id="btnShare">Generar y compartir PDF</button>
+    <div class="err" id="err"></div>
+    <div style="text-align:center;margin-top:10px">
+      <span id="btnPrint" style="font-size:12px;color:var(--rojo);cursor:pointer;text-decoration:underline">o generar versión imprimible</span>
+      <span style="color:#bbb;margin:0 8px">|</span>
+      <span id="btnLimpiar" style="font-size:12px;color:#777;cursor:pointer;text-decoration:underline">empezar de nuevo</span>
+    </div>
+  </div>
+
+  <div id="impreso"></div>
+</div>
+
+<script>
+window.addEventListener('error', function(ev){
+  var f=document.getElementById('fatal'); if(!f) return;
+  f.style.display='block';
+  f.textContent='ERROR: '+(ev.message||'desconocido')+(ev.lineno?('  [línea '+ev.lineno+']'):'');
+});
+</script>
+
+<!-- ===== Generador de códigos QR (autónomo, sin internet) ===== -->
+<script>
+// ============================================================
+// Generador de códigos QR (modo byte, nivel M, versiones 1-10)
+// Autónomo: no requiere internet ni librerías externas.
+// Devuelve una matriz de true/false  ->  qrMatriz(texto)
+// ============================================================
+var QR = (function(){
+  // ---- Tablas por versión (nivel M) ----
+  // [total codewords, EC por bloque, g1 bloques, g1 datos, g2 bloques, g2 datos]
+  var TAB = {
+    1:[26,10,1,16,0,0],   2:[44,16,1,28,0,0],   3:[70,26,1,44,0,0],
+    4:[100,18,2,32,0,0],  5:[134,24,2,43,0,0],  6:[172,16,4,27,0,0],
+    7:[196,18,4,31,0,0],  8:[242,22,2,38,2,39], 9:[292,22,3,36,2,37],
+    10:[346,26,4,43,1,44]
+  };
+  var ALIGN = {1:[],2:[6,18],3:[6,22],4:[6,26],5:[6,30],6:[6,34],
+               7:[6,22,38],8:[6,24,42],9:[6,26,46],10:[6,28,50]};
+
+  // ---- Aritmética en GF(256) ----
+  var EXP = new Array(512), LOG = new Array(256);
+  (function(){
+    var x=1;
+    for(var i=0;i<255;i++){ EXP[i]=x; LOG[x]=i; x<<=1; if(x&0x100) x^=0x11D; }
+    for(var j=255;j<512;j++) EXP[j]=EXP[j-255];
+  })();
+  function mul(a,b){ return (a===0||b===0)?0:EXP[LOG[a]+LOG[b]]; }
+
+  function polGen(grado){
+    var p=[1];
+    for(var i=0;i<grado;i++){
+      var n=new Array(p.length+1); for(var k=0;k<n.length;k++) n[k]=0;
+      for(var j=0;j<p.length;j++){
+        n[j]   ^= p[j];
+        n[j+1] ^= mul(p[j], EXP[i]);
+      }
+      p=n;
+    }
+    return p;
+  }
+  function ecc(datos, nEc){
+    var gen=polGen(nEc);
+    var res=datos.slice();
+    for(var i=0;i<nEc;i++) res.push(0);
+    for(var i=0;i<datos.length;i++){
+      var c=res[i];
+      if(c!==0){ for(var j=0;j<gen.length;j++) res[i+j]^=mul(gen[j],c); }
+    }
+    return res.slice(datos.length);
+  }
+
+  // ---- Codificación de datos (modo byte) ----
+  function utf8(txt){
+    var out=[];
+    for(var i=0;i<txt.length;i++){
+      var c=txt.charCodeAt(i);
+      if(c<0x80) out.push(c);
+      else if(c<0x800){ out.push(0xC0|(c>>6), 0x80|(c&0x3F)); }
+      else { out.push(0xE0|(c>>12), 0x80|((c>>6)&0x3F), 0x80|(c&0x3F)); }
+    }
+    return out;
+  }
+
+  function construirDatos(bytes, ver){
+    var t=TAB[ver];
+    var totalDatos = t[2]*t[3] + t[4]*t[5];
+    var bits=[];
+    function push(val, n){ for(var i=n-1;i>=0;i--) bits.push((val>>i)&1); }
+    push(4,4);                              // modo byte
+    push(bytes.length, ver<10?8:16);        // contador
+    for(var i=0;i<bytes.length;i++) push(bytes[i],8);
+    var cap=totalDatos*8;
+    for(var i=0;i<4 && bits.length<cap;i++) bits.push(0);   // terminador
+    while(bits.length%8!==0) bits.push(0);
+    var cw=[];
+    for(var i=0;i<bits.length;i+=8){
+      var b=0; for(var j=0;j<8;j++) b=(b<<1)|bits[i+j];
+      cw.push(b);
+    }
+    var relleno=[0xEC,0x11], k=0;
+    while(cw.length<totalDatos){ cw.push(relleno[k%2]); k++; }
+    return cw;
+  }
+
+  function intercalar(cw, ver){
+    var t=TAB[ver], nEc=t[1];
+    var bloques=[], ecs=[], p=0, i, j;
+    for(i=0;i<t[2];i++){ var d=cw.slice(p,p+t[3]); p+=t[3]; bloques.push(d); ecs.push(ecc(d,nEc)); }
+    for(i=0;i<t[4];i++){ var d2=cw.slice(p,p+t[5]); p+=t[5]; bloques.push(d2); ecs.push(ecc(d2,nEc)); }
+    var out=[], max=Math.max(t[3], t[5]);
+    for(i=0;i<max;i++) for(j=0;j<bloques.length;j++) if(i<bloques[j].length) out.push(bloques[j][i]);
+    for(i=0;i<nEc;i++) for(j=0;j<ecs.length;j++) out.push(ecs[j][i]);
+    return out;
+  }
+
+  // ---- Matriz ----
+  function nueva(n){
+    var m=new Array(n), r=new Array(n), i, j;
+    for(i=0;i<n;i++){ m[i]=new Array(n); r[i]=new Array(n);
+      for(j=0;j<n;j++){ m[i][j]=0; r[i][j]=false; } }
+    return {m:m, res:r, n:n};
+  }
+  function finder(M, fr, fc){
+    for(var r=-1;r<=7;r++) for(var c=-1;c<=7;c++){
+      var rr=fr+r, cc=fc+c;
+      if(rr<0||cc<0||rr>=M.n||cc>=M.n) continue;
+      var dentro = (r>=0&&r<=6&&(c===0||c===6)) || (c>=0&&c<=6&&(r===0||r===6)) ||
+                   (r>=2&&r<=4&&c>=2&&c<=4);
+      M.m[rr][cc]=dentro?1:0; M.res[rr][cc]=true;
+    }
+  }
+  function patrones(M, ver){
+    finder(M,0,0); finder(M,0,M.n-7); finder(M,M.n-7,0);
+    var i;
+    for(i=8;i<M.n-8;i++){
+      var v=(i%2===0)?1:0;
+      M.m[6][i]=v; M.res[6][i]=true;
+      M.m[i][6]=v; M.res[i][6]=true;
+    }
+    var pos=ALIGN[ver], ult=pos.length-1;
+    for(var a=0;a<pos.length;a++) for(var b=0;b<pos.length;b++){
+      // se omiten solo las tres esquinas donde están los patrones de posición
+      if((a===0&&b===0)||(a===0&&b===ult)||(a===ult&&b===0)) continue;
+      var r=pos[a], c=pos[b];
+      for(var dr=-2;dr<=2;dr++) for(var dc=-2;dc<=2;dc++){
+        var on = (Math.abs(dr)===2||Math.abs(dc)===2||(dr===0&&dc===0))?1:0;
+        M.m[r+dr][c+dc]=on; M.res[r+dr][c+dc]=true;
+      }
+    }
+    M.m[M.n-8][8]=1; M.res[M.n-8][8]=true;          // módulo oscuro
+    // reservar formato
+    for(i=0;i<9;i++){
+      if(!M.res[8][i]){ M.res[8][i]=true; }
+      if(!M.res[i][8]){ M.res[i][8]=true; }
+    }
+    for(i=0;i<8;i++){
+      M.res[8][M.n-1-i]=true;
+      M.res[M.n-1-i][8]=true;
+    }
+    if(ver>=7){
+      for(i=0;i<6;i++) for(var k=0;k<3;k++){
+        M.res[M.n-11+k][i]=true;
+        M.res[i][M.n-11+k]=true;
+      }
+    }
+  }
+  function colocar(M, datos){
+    var dir=-1, row=M.n-1, bit=0, col;
+    for(col=M.n-1; col>0; col-=2){
+      if(col===6) col--;
+      while(true){
+        for(var k=0;k<2;k++){
+          var c=col-k;
+          if(!M.res[row][c]){
+            var v=0;
+            if(bit < datos.length*8){
+              v=(datos[bit>>3]>>(7-(bit&7)))&1;
+            }
+            M.m[row][c]=v; bit++;
+          }
+        }
+        row+=dir;
+        if(row<0||row>=M.n){ row-=dir; dir=-dir; break; }
+      }
+    }
+  }
+  function mascara(r,c,p){
+    switch(p){
+      case 0: return (r+c)%2===0;
+      case 1: return r%2===0;
+      case 2: return c%3===0;
+      case 3: return (r+c)%3===0;
+      case 4: return (Math.floor(r/2)+Math.floor(c/3))%2===0;
+      case 5: return ((r*c)%2)+((r*c)%3)===0;
+      case 6: return (((r*c)%2)+((r*c)%3))%2===0;
+      case 7: return (((r+c)%2)+((r*c)%3))%2===0;
+    }
+    return false;
+  }
+  function aplicarMascara(M, p){
+    var o=[], r, c;
+    for(r=0;r<M.n;r++){ o[r]=[];
+      for(c=0;c<M.n;c++){
+        o[r][c]=M.m[r][c];
+        if(!M.res[r][c] && mascara(r,c,p)) o[r][c]^=1;
+      }
+    }
+    return o;
+  }
+  function bchFormato(datos){
+    var d=datos<<10, g=0x537;
+    for(var i=14;i>=10;i--) if((d>>i)&1) d^=g<<(i-10);
+    return ((datos<<10)|d)^0x5412;
+  }
+  function bchVersion(ver){
+    var d=ver<<12, g=0x1F25;
+    for(var i=17;i>=12;i--) if((d>>i)&1) d^=g<<(i-12);
+    return (ver<<12)|d;
+  }
+  function ponerFormato(m, n, p){
+    var f=bchFormato((0<<3)|p);   // 0 = nivel M
+    for(var i=0;i<15;i++){
+      // el módulo i lleva el bit (14-i): el más significativo va primero
+      var b=(f>>(14-i))&1;
+      // copia 1: alrededor del patrón superior izquierdo
+      if(i<6){ m[8][i]=b; }
+      else if(i===6){ m[8][7]=b; }
+      else if(i===7){ m[8][8]=b; }
+      else if(i===8){ m[7][8]=b; }
+      else { m[14-i][8]=b; }
+      // copia 2: 7 bits subiendo por la columna 8, luego 8 bits por la fila 8
+      // (la celda n-8,8 queda libre: es el módulo oscuro fijo)
+      if(i<7){ m[n-1-i][8]=b; }
+      else { m[8][n-15+i]=b; }
+    }
+    m[n-8][8]=1;
+  }
+  function ponerVersion(m, n, ver){
+    if(ver<7) return;
+    var v=bchVersion(ver);
+    for(var i=0;i<18;i++){
+      var b=(v>>i)&1;
+      var r=Math.floor(i/3), c=i%3;
+      m[n-11+c][r]=b;
+      m[r][n-11+c]=b;
+    }
+  }
+  function penaliza(m,n){
+    var p=0, r, c, i, run, color;
+    // regla 1
+    for(r=0;r<n;r++){ run=1; for(c=1;c<n;c++){
+      if(m[r][c]===m[r][c-1]) run++; else { if(run>=5) p+=3+(run-5); run=1; } }
+      if(run>=5) p+=3+(run-5); }
+    for(c=0;c<n;c++){ run=1; for(r=1;r<n;r++){
+      if(m[r][c]===m[r-1][c]) run++; else { if(run>=5) p+=3+(run-5); run=1; } }
+      if(run>=5) p+=3+(run-5); }
+    // regla 2
+    for(r=0;r<n-1;r++) for(c=0;c<n-1;c++){
+      var v=m[r][c];
+      if(v===m[r][c+1] && v===m[r+1][c] && v===m[r+1][c+1]) p+=3;
+    }
+    // regla 3
+    var pat1=[1,0,1,1,1,0,1,0,0,0,0], pat2=[0,0,0,0,1,0,1,1,1,0,1];
+    function busca(linea){
+      var cnt=0;
+      for(var i=0;i+11<=linea.length;i++){
+        var ok1=true, ok2=true;
+        for(var j=0;j<11;j++){ if(linea[i+j]!==pat1[j]) ok1=false; if(linea[i+j]!==pat2[j]) ok2=false; }
+        if(ok1||ok2) cnt++;
+      }
+      return cnt;
+    }
+    for(r=0;r<n;r++) p+=40*busca(m[r]);
+    for(c=0;c<n;c++){ var col=[]; for(r=0;r<n;r++) col.push(m[r][c]); p+=40*busca(col); }
+    // regla 4
+    var osc=0; for(r=0;r<n;r++) for(c=0;c<n;c++) osc+=m[r][c];
+    var pct=osc*100/(n*n);
+    p += Math.floor(Math.abs(pct-50)/5)*10;
+    return p;
+  }
+
+  function generar(texto){
+    var bytes=utf8(texto), ver=0;
+    for(var v=1;v<=10;v++){
+      var t=TAB[v], cap=t[2]*t[3]+t[4]*t[5];
+      var cab = 4 + (v<10?8:16);
+      if(bytes.length*8 + cab <= cap*8){ ver=v; break; }
+    }
+    if(!ver) throw new Error('Texto demasiado largo para el QR');
+    var cw=construirDatos(bytes,ver);
+    var fin=intercalar(cw,ver);
+    var n=17+4*ver;
+    var M=nueva(n);
+    patrones(M,ver);
+    colocar(M,fin);
+    var mejor=null, mejorP=Infinity;
+    for(var p=0;p<8;p++){
+      var mm=aplicarMascara(M,p);
+      ponerFormato(mm,n,p);
+      ponerVersion(mm,n,ver);
+      var s=penaliza(mm,n);
+      if(s<mejorP){ mejorP=s; mejor=mm; }
+    }
+    var out=[];
+    for(var r=0;r<n;r++){ out[r]=[]; for(var c=0;c<n;c++) out[r][c]= mejor[r][c]===1; }
+    return out;
+  }
+
+  // Dibuja el QR en un canvas y devuelve dataURL PNG
+  function aDataURL(texto, px){
+    var m=generar(texto), n=m.length, q=4;
+    var esc=px||4;
+    var lado=(n+q*2)*esc;
+    var cv=document.createElement('canvas');
+    cv.width=lado; cv.height=lado;
+    var ctx=cv.getContext('2d');
+    ctx.fillStyle='#FFFFFF'; ctx.fillRect(0,0,lado,lado);
+    ctx.fillStyle='#000000';
+    for(var r=0;r<n;r++) for(var c=0;c<n;c++)
+      if(m[r][c]) ctx.fillRect((c+q)*esc,(r+q)*esc,esc,esc);
+    return cv.toDataURL('image/png');
+  }
+
+  return { generar: generar, aDataURL: aDataURL };
+})();
+
+</script>
+
+<script>
+// ============================================================
+// Dibujo vectorial del medidor de combustible y del camión.
+// Un solo código sirve para la pantalla (canvas) y para el PDF (jsPDF).
+// Las coordenadas van en "unidades de dibujo"; el adaptador las escala.
+// ============================================================
+
+function lienzoCanvas(ctx, esc){
+  function hex(c){ return c; }
+  return {
+    grosor:function(w){ ctx.lineWidth=Math.max(0.4,w*esc); },
+    trazo:function(c){ ctx.strokeStyle=hex(c); },
+    relleno:function(c){ ctx.fillStyle=hex(c); },
+    linea:function(x1,y1,x2,y2){
+      ctx.beginPath(); ctx.moveTo(x1*esc,y1*esc); ctx.lineTo(x2*esc,y2*esc); ctx.stroke();
+    },
+    rect:function(x,y,w,h,m){
+      ctx.beginPath(); ctx.rect(x*esc,y*esc,w*esc,h*esc);
+      if(m==='F'){ ctx.fill(); } else if(m==='FD'){ ctx.fill(); ctx.stroke(); } else { ctx.stroke(); }
+    },
+    circulo:function(x,y,r,m){
+      ctx.beginPath(); ctx.arc(x*esc,y*esc,r*esc,0,Math.PI*2);
+      if(m==='F'){ ctx.fill(); } else if(m==='FD'){ ctx.fill(); ctx.stroke(); } else { ctx.stroke(); }
+    },
+    poli:function(p,m){
+      ctx.beginPath(); ctx.moveTo(p[0][0]*esc,p[0][1]*esc);
+      for(var i=1;i<p.length;i++) ctx.lineTo(p[i][0]*esc,p[i][1]*esc);
+      ctx.closePath();
+      if(m==='F'){ ctx.fill(); } else if(m==='FD'){ ctx.fill(); ctx.stroke(); } else { ctx.stroke(); }
+    },
+    texto:function(t,x,y,sz,al,bold){
+      ctx.font=(bold?'bold ':'')+Math.max(6,sz*esc)+'px Arial, Helvetica, sans-serif';
+      ctx.textAlign=al||'left';
+      ctx.fillText(String(t), x*esc, y*esc);
+      ctx.textAlign='left';
+    }
+  };
+}
+
+function lienzoPDF(doc, ox, oy, esc){
+  function C(c){
+    return [parseInt(c.substr(1,2),16), parseInt(c.substr(3,2),16), parseInt(c.substr(5,2),16)];
+  }
+  return {
+    grosor:function(w){ doc.setLineWidth(Math.max(0.08, w*esc)); },
+    trazo:function(c){ var v=C(c); doc.setDrawColor(v[0],v[1],v[2]); },
+    relleno:function(c){ var v=C(c); doc.setFillColor(v[0],v[1],v[2]); },
+    linea:function(x1,y1,x2,y2){ doc.line(ox+x1*esc, oy+y1*esc, ox+x2*esc, oy+y2*esc); },
+    rect:function(x,y,w,h,m){
+      doc.rect(ox+x*esc, oy+y*esc, w*esc, h*esc, m==='F'?'F':(m==='FD'?'FD':'S'));
+    },
+    circulo:function(x,y,r,m){
+      doc.circle(ox+x*esc, oy+y*esc, r*esc, m==='F'?'F':(m==='FD'?'FD':'S'));
+    },
+    poli:function(p,m){
+      if(typeof doc.lines === 'function'){
+        var rel=[];
+        for(var i=1;i<p.length;i++) rel.push([(p[i][0]-p[i-1][0])*esc, (p[i][1]-p[i-1][1])*esc]);
+        doc.lines(rel, ox+p[0][0]*esc, oy+p[0][1]*esc, [1,1], m==='F'?'F':(m==='FD'?'FD':'S'), true);
+      }else{
+        // respaldo: contorno con segmentos sueltos
+        for(var j=0;j<p.length;j++){
+          var q=p[(j+1)%p.length];
+          doc.line(ox+p[j][0]*esc, oy+p[j][1]*esc, ox+q[0]*esc, oy+q[1]*esc);
+        }
+      }
+    },
+    texto:function(t,x,y,sz,al,bold){
+      doc.setFont('helvetica', bold?'bold':'normal');
+      doc.setFontSize(Math.max(3, sz*esc*2.8346));
+      if(al==='center') doc.text(String(t), ox+x*esc, oy+y*esc, {align:'center'});
+      else doc.text(String(t), ox+x*esc, oy+y*esc);
+    }
+  };
+}
+
+// ---------- MEDIDOR DE COMBUSTIBLE ----------
+// Espacio de dibujo: 100 x 62
+var MED_W=100, MED_H=62;
+function dibujarMedidor(L, pct){
+  var cx=50, cy=53, R=43, A0=160, A1=20;
+  var i, a, x, y, px=null, py=null;
+
+  L.trazo('#1a1a1a'); L.relleno('#1a1a1a');
+
+  // arco principal
+  L.grosor(2.4);
+  for(i=0;i<=56;i++){
+    a=(A0+(A1-A0)*i/56)*Math.PI/180;
+    x=cx+R*Math.cos(a); y=cy-R*Math.sin(a);
+    if(px!==null) L.linea(px,py,x,y);
+    px=x; py=y;
+  }
+  // marcas
+  for(i=0;i<=8;i++){
+    a=(A0+(A1-A0)*i/8)*Math.PI/180;
+    var larga=(i%2===0);
+    var r1=R-2.2, r2=R-(larga?9.5:6);
+    L.grosor(larga?2.0:1.1);
+    L.linea(cx+r1*Math.cos(a), cy-r1*Math.sin(a), cx+r2*Math.cos(a), cy-r2*Math.sin(a));
+  }
+  // letras E y F
+  L.texto('E', 7, 60, 12, 'center', true);
+  L.texto('F', 93, 60, 12, 'center', true);
+
+  // icono de surtidor
+  L.grosor(1.2);
+  L.rect(44.5, 30, 8, 13, 'S');
+  L.rect(46, 32.2, 5, 3.4, 'F');
+  L.linea(52.5, 33.5, 55.5, 33.5);
+  L.linea(55.5, 33.5, 55.5, 40);
+  L.circulo(55.5, 41, 1.1, 'F');
+
+  // aguja
+  if(pct!==null && pct!==undefined){
+    a=(A0+(A1-A0)*(pct/100))*Math.PI/180;
+    L.trazo('#12349c'); L.relleno('#12349c');
+    L.grosor(2.3);
+    L.linea(cx, cy, cx+(R-9)*Math.cos(a), cy-(R-9)*Math.sin(a));
+    L.circulo(cx, cy, 2.4, 'F');
+  }
+  L.trazo('#1a1a1a'); L.relleno('#1a1a1a'); L.grosor(0.4);
+}
+
+// ---------- CAMIÓN: VISTA LATERAL ----------
+// caja de 116 x 36 unidades, a partir de (ox,oy)
+function camionLateral(L, ox, oy, e){
+  function lx(a,b,c,d){ L.linea(ox+a*e, oy+b*e, ox+c*e, oy+d*e); }
+  function rc(a,b,w,h,m){ L.rect(ox+a*e, oy+b*e, w*e, h*e, m); }
+  function ci(a,b,r,m){ L.circulo(ox+a*e, oy+b*e, r*e, m); }
+  function po(p,m){
+    var q=[]; for(var i=0;i<p.length;i++) q.push([ox+p[i][0]*e, oy+p[i][1]*e]);
+    L.poli(q,m);
+  }
+  L.trazo('#1a1a1a'); L.relleno('#ffffff');
+
+  L.grosor(0.9);
+  rc(31, 3, 80, 23, 'FD');            // furgón
+  L.grosor(0.5);
+  lx(31, 6.5, 111, 6.5);              // moldura superior
+  lx(106, 3, 106, 26);                // puerta trasera
+  lx(108.5, 3, 108.5, 26);
+
+  L.grosor(0.9);
+  po([[6,26],[6,13],[10.5,7],[30,7],[30,26]], 'FD');   // cabina
+  L.grosor(0.5);
+  po([[11.8,9.5],[28.6,9.5],[28.6,15.8],[12.6,15.8]], 'F');  // parabrisas
+  L.grosor(0.6);
+  lx(28.8, 16.5, 28.8, 25.8);         // puerta
+  lx(25.8, 19.4, 27.6, 19.4);         // manija
+  lx(6, 11.8, 3.4, 11.8);             // espejo (hacia adelante)
+  lx(3.4, 11.8, 3.4, 15.6);
+
+  L.grosor(0.8);
+  lx(6, 26, 111, 26);                 // bastidor
+  rc(2.6, 20.8, 3.4, 5.2, 'FD');      // parachoques
+  L.grosor(0.5);
+  rc(46, 26, 14, 3.6, 'FD');          // tanque de combustible
+
+  // ruedas
+  L.relleno('#ffffff'); L.grosor(0.9);
+  ci(21, 28.5, 5.6, 'FD'); ci(21, 28.5, 2.3, 'FD');
+  ci(84, 28.5, 5.6, 'FD'); ci(84, 28.5, 2.3, 'FD');
+  ci(95, 28.5, 5.6, 'FD'); ci(95, 28.5, 2.3, 'FD');
+}
+
+// ---------- CAMIÓN: VISTA FRONTAL ----------
+// caja de 36 x 50 unidades
+function camionFrontal(L, ox, oy, e){
+  function lx(a,b,c,d){ L.linea(ox+a*e, oy+b*e, ox+c*e, oy+d*e); }
+  function rc(a,b,w,h,m){ L.rect(ox+a*e, oy+b*e, w*e, h*e, m); }
+  function po(p,m){
+    var q=[]; for(var i=0;i<p.length;i++) q.push([ox+p[i][0]*e, oy+p[i][1]*e]);
+    L.poli(q,m);
+  }
+  L.trazo('#1a1a1a'); L.relleno('#ffffff');
+
+  // ruedas (detrás de la carrocería)
+  L.grosor(0.8);
+  rc(1.4, 30, 4.6, 12, 'FD');
+  rc(30, 30, 4.6, 12, 'FD');
+
+  L.grosor(0.9);
+  po([[5,38],[5,8],[7.2,4.5],[28.8,4.5],[31,8],[31,38]], 'FD');  // carrocería
+  L.grosor(0.5);
+  po([[7.6,7.8],[28.4,7.8],[28.4,18.6],[7.6,18.6]], 'FD');       // parabrisas
+  L.grosor(0.55);
+  lx(18, 7.8, 18, 18.6);                                   // montante central
+  lx(10.5, 17.6, 14.5, 12.4);                              // limpiaparabrisas
+  lx(21.5, 17.6, 25.5, 12.4);
+
+  L.grosor(0.7);
+  rc(9.5, 21.5, 17, 8.4, 'S');                             // parrilla
+  L.grosor(0.4);
+  lx(9.5, 24.3, 26.5, 24.3); lx(9.5, 27.1, 26.5, 27.1);
+
+  L.grosor(0.7);
+  rc(5.4, 22.5, 3.4, 4.6, 'FD');                           // faros
+  rc(27.2, 22.5, 3.4, 4.6, 'FD');
+  rc(3.2, 31.5, 29.6, 5, 'FD');                            // parachoques
+
+  L.grosor(0.6);                                           // espejos
+  lx(5, 10.5, 1.6, 10.5);   lx(1.6, 10.5, 1.6, 15.5);
+  lx(31, 10.5, 34.4, 10.5); lx(34.4, 10.5, 34.4, 15.5);
+}
+
+// ---------- BLOQUE COMPLETO DEL ESQUEMA ----------
+// Espacio de dibujo: 170 x 82
+var ESQ_W=170, ESQ_H=82;
+function dibujarEsquema(L){
+  camionFrontal(L, 2, 16, 1.0);
+  camionLateral(L, 40, 2, 1.12);
+  camionLateral(L, 40, 44, 1.12);
+}
+
+</script>
+
+<script>
+// Carga de la librería del PDF con servidores de respaldo
+(function(){
+  var fuentes=[
+    'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+    'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js',
+    'https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js'
+  ];
+  var i=0;
+  function probar(){
+    if(window.jspdf && window.jspdf.jsPDF) return;
+    if(i>=fuentes.length){ window.__pdfFallo=true; return; }
+    var s=document.createElement('script');
+    s.src=fuentes[i++];
+    s.onload=function(){ if(!(window.jspdf&&window.jspdf.jsPDF)) probar(); };
+    s.onerror=probar;
+    document.head.appendChild(s);
+  }
+  probar();
+})();
+</script>
+
+<script>
+// ===================== DATOS DEL FORMATO =====================
+var PUNTOS = [
+  "Motor (Nivel de Aceite)",
+  "Refrigerante (Nivel de Líquido)",
+  "Dirección (Nivel de Aceite)",
+  "Carrocería (Estado)",
+  "Llantas (Estado)",
+  "Llanta de Emergencia",
+  "Cinturones de Seguridad",
+  "Freno (Pedal y Parqueo)",
+  "Calzas",
+  "Botiquín primeros auxilios",
+  "Caja de herramientas",
+  "Espejos Retrovisores",
+  "Extintor",
+  "Conos de seguridad",
+  "Luces (Bajas, Medias, Altas, Freno, Direccionales)",
+  "Indicadores en Tablero"
+];
+var CODIGO = "EC-SDO-CDS-TYR-TR-F-001";
+var TITULO = "Check List - Inspección diaria de Vehículos - Fountain";
+var LOGO  = "data:image/jpeg;base64,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";
+// el esquema del vehículo y el medidor se dibujan por código (ver dibujos.js)
+
+// ===================== UTILIDADES DE TEXTO (sin expresiones regulares) =====================
+var CR=String.fromCharCode(13), LF=String.fromCharCode(10);
+function reemplazarTodo(s,b,p){ return String(s==null?'':s).split(b).join(p); }
+function limpiaLinea(s){
+  var t=String(s==null?'':s);
+  t=reemplazarTodo(t,'|',' '); t=reemplazarTodo(t,CR,' '); t=reemplazarTodo(t,LF,' ');
+  return t;
+}
+function escHtml(s){
+  var t=String(s==null?'':s);
+  t=reemplazarTodo(t,'&','&amp;'); t=reemplazarTodo(t,'<','&lt;'); t=reemplazarTodo(t,'>','&gt;');
+  return t;
+}
+function soloAlfaNum(s){
+  var t=String(s==null?'':s), o='';
+  for(var i=0;i<t.length;i++){
+    var c=t.charCodeAt(i);
+    if((c>=48&&c<=57)||(c>=65&&c<=90)||(c>=97&&c<=122)) o+=t.charAt(i);
+  }
+  return o;
+}
+function dosDig(n){ return (n<10?'0':'')+n; }
+function ahoraTexto(){
+  var d=new Date();
+  return d.getFullYear()+'-'+dosDig(d.getMonth()+1)+'-'+dosDig(d.getDate())+' '+
+         dosDig(d.getHours())+':'+dosDig(d.getMinutes());
+}
+function fechaBonita(iso){
+  if(!iso) return '';
+  var p=iso.split(' ')[0].split('-');
+  var h=iso.split(' ')[1]||'';
+  return p[2]+'/'+p[1]+'/'+p[0]+(h?(' '+h):'');
+}
+
+// ===================== RENDER DE LOS PUNTOS =====================
+var cont=document.getElementById('items');
+for(var ip=0; ip<PUNTOS.length; ip++){
+  var d=document.createElement('div');
+  d.className='item'; d.setAttribute('data-idx', ip);
+  d.innerHTML =
+    '<div class="fila">'+
+      '<div class="txt"><span class="num">'+(ip+1)+'.</span> '+PUNTOS[ip]+'</div>'+
+      '<div class="opts">'+
+        '<div class="o" data-v="C">CUMPLE</div>'+
+        '<div class="o" data-v="N">NO CUMPLE</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="com"><input type="text" placeholder="Comentario (obligatorio si no cumple)"></div>';
+  cont.appendChild(d);
+}
+cont.addEventListener('click', function(e){
+  var o=e.target.closest('.o'); if(!o) return;
+  var it=o.closest('.item');
+  var hermanos=o.parentElement.querySelectorAll('.o');
+  for(var i=0;i<hermanos.length;i++) hermanos[i].classList.remove('sel');
+  o.classList.add('sel');
+  it.classList.remove('pendiente');
+  if(o.getAttribute('data-v')==='N') it.classList.add('conN'); else it.classList.remove('conN');
+  if(o.getAttribute('data-v')==='N'){ setTimeout(function(){ it.querySelector('.com input').focus(); },80); }
+});
+
+// ===================== SÍ / NO DAÑOS =====================
+var botSino=document.querySelectorAll('.sino .s');
+for(var ib=0; ib<botSino.length; ib++){
+  botSino[ib].addEventListener('click', function(){
+    for(var i=0;i<botSino.length;i++) botSino[i].classList.remove('sel');
+    this.classList.add('sel');
+    var g=document.getElementById('danosFotos');
+    if(this.getAttribute('data-v')==='SI') g.classList.add('on'); else g.classList.remove('on');
+    guardar();
+  });
+}
+
+// ===================== FECHA / PREFILL POR QR =====================
+(function(){
+  var hoy=new Date();
+  document.getElementById('fecha').value=hoy.toISOString().slice(0,10);
+  var q=new URLSearchParams(location.search);
+  if(q.get('placa')) document.getElementById('placa').value=q.get('placa').toUpperCase();
+  if(q.get('ruta'))  document.getElementById('ruta').value=q.get('ruta');
+  if(q.get('cedis')) document.getElementById('cedis').value=q.get('cedis');
+})();
+
+function calcRecorrido(){
+  var a=parseFloat(document.getElementById('kmsal').value);
+  var b=parseFloat(document.getElementById('kment').value);
+  var el=document.getElementById('recorrido');
+  if(!isNaN(a)&&!isNaN(b)){
+    var dd=b-a;
+    el.textContent = dd>=0 ? ('Recorrido del día: '+dd.toLocaleString('es-EC')+' km')
+                           : '⚠ El KM de llegada es menor al de salida. Verifica.';
+    el.style.color = dd>=0 ? '#1e7d34' : '#c62828';
+  } else el.textContent='';
+}
+document.getElementById('kmsal').addEventListener('input',calcRecorrido);
+document.getElementById('kment').addEventListener('input',calcRecorrido);
+
+// ===================== MEDIDOR DE COMBUSTIBLE =====================
+function textoNivel(p){
+  if(p<=3) return 'E (vacío)';
+  if(p>=97) return 'F (lleno)';
+  if(Math.abs(p-25)<=3) return '¼';
+  if(Math.abs(p-50)<=3) return '½';
+  if(Math.abs(p-75)<=3) return '¾';
+  return p+'%';
+}
+function pintarGauge(idCanvas, idTexto, pct){
+  var c=document.getElementById(idCanvas);
+  if(!c) return;
+  var ctx=c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  ctx.lineCap='round'; ctx.lineJoin='round';
+  dibujarMedidor(lienzoCanvas(ctx, c.width/MED_W), pct);
+  var t=document.getElementById(idTexto); if(t) t.textContent=textoNivel(pct);
+}
+function pintarEsquema(){
+  var c=document.getElementById('diagCv'); if(!c) return;
+  var ctx=c.getContext('2d');
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height);
+  ctx.lineCap='round'; ctx.lineJoin='round';
+  dibujarEsquema(lienzoCanvas(ctx, c.width/ESQ_W));
+}
+pintarEsquema();
+function conectarGauge(idRange, idCanvas, idTexto){
+  var r=document.getElementById(idRange);
+  function act(){ pintarGauge(idCanvas, idTexto, parseInt(r.value,10)); }
+  r.addEventListener('input', function(){ act(); guardar(); });
+  act();
+}
+conectarGauge('combSal','gSal','gSalTxt');
+conectarGauge('combEnt','gEnt','gEntTxt');
+
+// ===================== FOTOS =====================
+function comprimir(file, maxLado, calidad){
+  return new Promise(function(res){
+    var r=new FileReader();
+    r.onload=function(ev){
+      var img=new Image();
+      img.onload=function(){
+        var w=img.width, h=img.height;
+        if(Math.max(w,h)>maxLado){
+          if(w>h){ h=Math.round(h*maxLado/w); w=maxLado; }
+          else   { w=Math.round(w*maxLado/h); h=maxLado; }
+        }
+        var c=document.createElement('canvas'); c.width=w; c.height=h;
+        c.getContext('2d').drawImage(img,0,0,w,h);
+        res({data:c.toDataURL('image/jpeg',calidad), w:w, h:h});
+      };
+      img.onerror=function(){ res(null); };
+      img.src=ev.target.result;
+    };
+    r.onerror=function(){ res(null); };
+    r.readAsDataURL(file);
+  });
+}
+var fotoKmSal=null, fotoKmEnt=null, fotosDanos=[];
+function montarFotoSimple(inputId, prevId, setter){
+  document.getElementById(inputId).addEventListener('change', function(e){
+    var f=e.target.files[0]; if(!f) return;
+    var prev=document.getElementById(prevId);
+    prev.innerHTML='<div style="font-size:12px;color:#777">Procesando foto...</div>';
+    comprimir(f,1400,0.72).then(function(r){
+      if(!r){ prev.innerHTML='<div style="font-size:12px;color:#c62828">No se pudo leer la foto.</div>'; return; }
+      setter(r);
+      prev.innerHTML='<img src="'+r.data+'" alt="foto">';
+      guardar();
+    });
+  });
+}
+montarFotoSimple('fotoKmSal','prevKmSal',function(r){ fotoKmSal=r; });
+montarFotoSimple('fotoKmEnt','prevKmEnt',function(r){ fotoKmEnt=r; });
+
+document.getElementById('fotoDanos').addEventListener('change', function(e){
+  var files=[].slice.call(e.target.files); if(!files.length) return;
+  var pend=files.length;
+  files.forEach(function(f){
+    if(fotosDanos.length>=10){ if(--pend===0){ e.target.value=''; pintarGaleria(); guardar(); } return; }
+    comprimir(f,1400,0.70).then(function(r){
+      if(r) fotosDanos.push(r);
+      if(--pend===0){ e.target.value=''; pintarGaleria(); guardar(); }
+    });
+  });
+});
+function pintarGaleria(){
+  var gal=document.getElementById('galDanos'), h='';
+  for(var i=0;i<fotosDanos.length;i++)
+    h+='<div class="gi"><img src="'+fotosDanos[i].data+'"><button class="x" data-i="'+i+'">&times;</button></div>';
+  gal.innerHTML=h;
+}
+document.getElementById('galDanos').addEventListener('click', function(e){
+  var b=e.target.closest('.x'); if(!b) return;
+  fotosDanos.splice(parseInt(b.getAttribute('data-i'),10),1);
+  pintarGaleria(); guardar();
+});
+
+// ===================== FIRMA ELECTRÓNICA CON QR =====================
+var firmas = { cond:null, rec:null };
+
+function cargaQR(idCanvas, texto){
+  var c=document.getElementById(idCanvas);
+  var m=QR.generar(texto), n=m.length, q=2;
+  var esc=Math.max(1, Math.floor(c.width/(n+q*2)));
+  var lado=(n+q*2)*esc, off=Math.floor((c.width-lado)/2);
+  var ctx=c.getContext('2d');
+  ctx.fillStyle='#fff'; ctx.fillRect(0,0,c.width,c.height);
+  ctx.fillStyle='#000';
+  for(var r=0;r<n;r++) for(var cc=0;cc<n;cc++)
+    if(m[r][cc]) ctx.fillRect(off+(cc+q)*esc, off+(r+q)*esc, esc, esc);
+  return c.toDataURL('image/png');
+}
+
+function firmar(rol){
+  var esCond = (rol==='cond');
+  var nombre = (document.getElementById(esCond?'conductor':'receptor').value||'').trim();
+  var ci     = (document.getElementById(esCond?'ciCond':'ciRec').value||'').trim();
+  var err=document.getElementById('err'); err.style.color='#c62828';
+  if(!nombre){ err.textContent='⚠ Escribe el nombre antes de firmar.'; return; }
+  if(!ci){ err.textContent='⚠ Escribe la C.I. antes de firmar.'; return; }
+  err.textContent='';
+  var sello = ahoraTexto();
+  var placa = (document.getElementById('placa').value||'').toUpperCase();
+  var carga = 'FIRMA|'+(esCond?'CONDUCTOR':'RECEPTOR')+'|'+limpiaLinea(nombre)+'|'+ci+'|'+sello+'|'+placa+'|'+CODIGO;
+  var img = cargaQR(esCond?'qrCond':'qrRec', carga);
+  firmas[rol] = { nombre:nombre, ci:ci, sello:sello, carga:carga, img:img };
+  pintarFirma(rol);
+  guardar();
+}
+function pintarFirma(rol){
+  var esCond=(rol==='cond');
+  var f=firmas[rol];
+  var caja=document.getElementById(esCond?'okCond':'okRec');
+  var dat=document.getElementById(esCond?'datosCond':'datosRec');
+  var bot=document.getElementById(esCond?'btnFirmaCond':'btnFirmaRec');
+  if(!f){ caja.classList.remove('on'); bot.style.display='block'; return; }
+  dat.innerHTML='<b>Firmado electrónicamente</b>'+
+    escHtml(f.nombre)+'<br>C.I.: '+escHtml(f.ci)+'<br>'+fechaBonita(f.sello);
+  caja.classList.add('on');
+  bot.style.display='none';
+}
+document.getElementById('btnFirmaCond').addEventListener('click', function(){ firmar('cond'); });
+document.getElementById('btnFirmaRec').addEventListener('click', function(){ firmar('rec'); });
+var rehacer=document.querySelectorAll('.rehacer');
+for(var ir=0; ir<rehacer.length; ir++){
+  rehacer[ir].addEventListener('click', function(){
+    firmas[this.getAttribute('data-rol')]=null;
+    pintarFirma(this.getAttribute('data-rol'));
+    guardar();
+  });
+}
+// si cambian nombre o cédula, la firma se anula
+function anulaSi(idCampo, rol){
+  document.getElementById(idCampo).addEventListener('input', function(){
+    if(firmas[rol]){ firmas[rol]=null; pintarFirma(rol); }
+  });
+}
+anulaSi('conductor','cond'); anulaSi('ciCond','cond');
+anulaSi('receptor','rec');   anulaSi('ciRec','rec');
+
+// ===================== RECOLECTAR DATOS =====================
+function val(id){ return (document.getElementById(id).value||'').trim(); }
+function datos(){
+  var nodos=document.querySelectorAll('.item');
+  var items=[];
+  for(var i=0;i<PUNTOS.length;i++){
+    var sel=nodos[i].querySelector('.o.sel');
+    items.push({ res: sel? sel.getAttribute('data-v') : '',
+                 com: (nodos[i].querySelector('.com input').value||'').trim() });
+  }
+  var dSel=document.querySelector('.sino .s.sel');
+  return {
+    cedis:val('cedis'), fecha:val('fecha'), placa:val('placa').toUpperCase(), ruta:val('ruta'),
+    hsal:val('hsal'), kmsal:val('kmsal'), hent:val('hent'), kment:val('kment'),
+    combSal:parseInt(document.getElementById('combSal').value,10),
+    combEnt:parseInt(document.getElementById('combEnt').value,10),
+    conductor:val('conductor'), ciCond:val('ciCond'),
+    receptor:val('receptor'), ciRec:val('ciRec'),
+    obsSal:val('obsSal'), obsLle:val('obsLle'),
+    danos: dSel? dSel.getAttribute('data-v') : '',
+    items:items, fCond:firmas.cond, fRec:firmas.rec
+  };
+}
+
+// ===================== VALIDACIÓN =====================
+function validar(){
+  var err=document.getElementById('err'); err.style.color='#c62828';
+  function stop(msg, el){
+    err.textContent='⚠ '+msg;
+    if(el){ el.scrollIntoView({behavior:'smooth',block:'center'}); try{ el.focus(); }catch(e){} }
+    return {ok:false};
+  }
+  if(!val('placa'))  return stop('Ingresa el # de PLACA.', document.getElementById('placa'));
+  if(!val('ruta'))   return stop('Ingresa el # de RUTA.', document.getElementById('ruta'));
+  if(!val('hsal'))   return stop('Ingresa la HORA DE SALIDA.', document.getElementById('hsal'));
+  if(!val('kmsal'))  return stop('Ingresa el KM DE SALIDA.', document.getElementById('kmsal'));
+  if(!fotoKmSal)     return stop('Toma la FOTO DEL ODÓMETRO de salida.', document.getElementById('prevKmSal'));
+
+  var nodos=document.querySelectorAll('.item'), faltan=0, primero=null;
+  for(var i=0;i<nodos.length;i++){
+    if(!nodos[i].querySelector('.o.sel')){ nodos[i].classList.add('pendiente'); faltan++; if(!primero) primero=nodos[i]; }
+  }
+  if(faltan) return stop('Faltan '+faltan+' punto(s) por marcar en la revisión de salida.', primero);
+  for(var j=0;j<nodos.length;j++){
+    var s=nodos[j].querySelector('.o.sel');
+    if(s && s.getAttribute('data-v')==='N' && !nodos[j].querySelector('.com input').value.trim())
+      return stop('Escribe el comentario de los puntos marcados como NO CUMPLE.', nodos[j].querySelector('.com input'));
+  }
+  if(!val('conductor')) return stop('Ingresa el NOMBRE DEL CONDUCTOR.', document.getElementById('conductor'));
+  if(!val('ciCond'))    return stop('Ingresa la C.I. del conductor.', document.getElementById('ciCond'));
+  if(!firmas.cond)      return stop('Falta la FIRMA ELECTRÓNICA del conductor.', document.getElementById('btnFirmaCond'));
+
+  var hayLlegada = val('hent') || val('kment') || document.querySelector('.sino .s.sel');
+  if(hayLlegada){
+    if(!val('hent'))  return stop('Ingresa la HORA DE ENTRADA.', document.getElementById('hent'));
+    if(!val('kment')) return stop('Ingresa el KM DE LLEGADA.', document.getElementById('kment'));
+    if(!fotoKmEnt)    return stop('Toma la FOTO DEL ODÓMETRO de llegada.', document.getElementById('prevKmEnt'));
+    var a=parseFloat(val('kmsal')), b=parseFloat(val('kment'));
+    if(!isNaN(a)&&!isNaN(b)&&b<a) return stop('El KM de llegada no puede ser menor al de salida.', document.getElementById('kment'));
+    var dd=document.querySelector('.sino .s.sel');
+    if(!dd) return stop('Indica si APLICA o NO APLICA rayones, golpes o roturas.', document.querySelector('.sino'));
+    if(dd.getAttribute('data-v')==='SI' && fotosDanos.length===0)
+      return stop('Adjunta al menos una foto del daño.', document.getElementById('danosFotos'));
+    if(!val('receptor')) return stop('Ingresa el NOMBRE DEL RECEPTOR.', document.getElementById('receptor'));
+    if(!val('ciRec'))    return stop('Ingresa la C.I. del receptor.', document.getElementById('ciRec'));
+    if(!firmas.rec)      return stop('Falta la FIRMA ELECTRÓNICA del receptor.', document.getElementById('btnFirmaRec'));
+  }
+  err.textContent='';
+  return {ok:true, placa:val('placa').toUpperCase(), fecha:val('fecha'), completo: !!hayLlegada};
+}
+
+// ===================== GUARDADO LOCAL =====================
+var LS_KEY='checklistVehiculo_v2';
+function estadoActual(){
+  var nodos=document.querySelectorAll('.item'), items=[];
+  for(var i=0;i<PUNTOS.length;i++){
+    var sel=nodos[i].querySelector('.o.sel');
+    items.push({ r: sel? sel.getAttribute('data-v'):'', c: nodos[i].querySelector('.com input').value||'' });
+  }
+  var dSel=document.querySelector('.sino .s.sel');
+  var campos={}, ids=['cedis','fecha','placa','ruta','hsal','kmsal','hent','kment',
+                      'conductor','ciCond','receptor','ciRec','obsSal','obsLle','combSal','combEnt'];
+  for(var k=0;k<ids.length;k++) campos[ids[k]]=document.getElementById(ids[k]).value;
+  return { campos:campos, items:items, danos: dSel? dSel.getAttribute('data-v'):'',
+           fKmSal:fotoKmSal, fKmEnt:fotoKmEnt, fDanos:fotosDanos,
+           firmas:firmas, guardado:Date.now() };
+}
+var guardarTimer=null;
+function guardar(){
+  clearTimeout(guardarTimer);
+  guardarTimer=setTimeout(function(){
+    try{ localStorage.setItem(LS_KEY, JSON.stringify(estadoActual())); }
+    catch(e){
+      try{ var s=estadoActual(); s.fDanos=[]; s.fKmEnt=null;
+           localStorage.setItem(LS_KEY, JSON.stringify(s)); }catch(e2){}
+    }
+  },500);
+}
+function limpiarGuardado(){ try{ localStorage.removeItem(LS_KEY); }catch(e){} }
+
+function restaurar(){
+  var s=null;
+  try{ s=JSON.parse(localStorage.getItem(LS_KEY)||'null'); }catch(e){ return; }
+  if(!s || !s.campos) return;
+  var hoy=new Date().toISOString().slice(0,10);
+  if(s.campos.fecha !== hoy){ limpiarGuardado(); return; }
+  for(var id in s.campos){
+    var el=document.getElementById(id);
+    if(el && s.campos[id]!=null && s.campos[id]!=='') el.value=s.campos[id];
+  }
+  var nodos=document.querySelectorAll('.item');
+  (s.items||[]).forEach(function(v,i){
+    if(!nodos[i]||!v.r) return;
+    var o=nodos[i].querySelector('.o[data-v="'+v.r+'"]'); if(!o) return;
+    var hs=nodos[i].querySelectorAll('.o');
+    for(var z=0;z<hs.length;z++) hs[z].classList.remove('sel');
+    o.classList.add('sel');
+    if(v.r==='N') nodos[i].classList.add('conN');
+    nodos[i].querySelector('.com input').value=v.c||'';
+  });
+  if(s.danos){
+    var b=document.querySelector('.sino .s[data-v="'+s.danos+'"]');
+    if(b){ b.classList.add('sel');
+      if(s.danos==='SI') document.getElementById('danosFotos').classList.add('on'); }
+  }
+  if(s.fKmSal){ fotoKmSal=s.fKmSal;
+    document.getElementById('prevKmSal').innerHTML='<img src="'+s.fKmSal.data+'">'; }
+  if(s.fKmEnt){ fotoKmEnt=s.fKmEnt;
+    document.getElementById('prevKmEnt').innerHTML='<img src="'+s.fKmEnt.data+'">'; }
+  if(s.fDanos && s.fDanos.length){ fotosDanos=s.fDanos; pintarGaleria(); }
+  if(s.firmas){
+    ['cond','rec'].forEach(function(rol){
+      var f=s.firmas[rol];
+      if(f && f.carga){
+        firmas[rol]=f;
+        try{ cargaQR(rol==='cond'?'qrCond':'qrRec', f.carga); }catch(e){}
+        pintarFirma(rol);
+      }
+    });
+  }
+  pintarGauge('gSal','gSalTxt', parseInt(document.getElementById('combSal').value,10));
+  pintarGauge('gEnt','gEntTxt', parseInt(document.getElementById('combEnt').value,10));
+  calcRecorrido();
+  document.getElementById('restaurado').style.display='block';
+}
+
+document.addEventListener('input', function(e){ if(e.target.closest('.wrap')) guardar(); });
+document.addEventListener('click', function(e){
+  if(e.target.closest('.o, .sino .s, .galeria .x')) guardar();
+});
+document.getElementById('btnLimpiar').addEventListener('click', function(){
+  if(confirm('¿Borrar todo lo llenado y empezar de nuevo?')){ limpiarGuardado(); location.reload(); }
+});
+
+// ===================== PDF (réplica del formato) =====================
+function construirPDF(){
+  var jsPDF = window.jspdf.jsPDF;
+  var doc = new jsPDF({unit:'mm', format:'a4', orientation:'portrait'});
+  var d = datos();
+  var M=8, W=194, Y=M;
+
+  function celda(x,y,w,h,txt,bold,fill,size,align){
+    doc.setDrawColor(0); doc.setLineWidth(0.3);
+    if(fill){ doc.setFillColor(242,242,242); doc.rect(x,y,w,h,'FD'); } else doc.rect(x,y,w,h);
+    doc.setFont('helvetica', bold?'bold':'normal'); doc.setFontSize(size||8.5);
+    var t=String(txt==null?'':txt);
+    if(align==='c') doc.text(t, x+w/2, y+h/2+1.1, {align:'center', maxWidth:w-2});
+    else doc.text(t, x+1.8, y+h/2+1.1, {maxWidth:w-3});
+  }
+  function banda(txt,h){
+    doc.setFillColor(90,90,90); doc.rect(M,Y,W,h,'F');
+    doc.setTextColor(255); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.text(txt, M+W/2, Y+h/2+1.2, {align:'center'});
+    doc.setTextColor(0); Y+=h;
+  }
+  function reset(){ doc.setDrawColor(0); doc.setLineWidth(0.3); doc.setFillColor(255,255,255);
+                    doc.setFont('helvetica','normal'); }
+  function medidor(x,y,w,pct){
+    dibujarMedidor(lienzoPDF(doc, x, y, w/MED_W), pct);
+    reset();
+    return w*MED_H/MED_W;
+  }
+  function bloqueFirma(x,y,w,h,f){
+    doc.rect(x,y,w,h);
+    if(!f) return;
+    var lado=h-4;
+    if(f.img){ try{ doc.addImage(f.img,'PNG',x+2,y+2,lado,lado); }catch(e){} }
+    var tx=x+lado+6;
+    doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+    doc.text('FIRMADO ELECTRÓNICAMENTE', tx, y+5);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7);
+    doc.text(String(f.nombre||''), tx, y+9, {maxWidth:w-lado-8});
+    doc.text('C.I.: '+String(f.ci||''), tx, y+12.5);
+    doc.text('Fecha: '+fechaBonita(f.sello), tx, y+16);
+  }
+
+  // ---------- encabezado ----------
+  var hH=14;
+  doc.setDrawColor(0); doc.setLineWidth(0.3); doc.rect(M,Y,W,hH);
+  doc.line(M+40,Y,M+40,Y+hH); doc.line(M+W-44,Y,M+W-44,Y+hH);
+  try{ doc.addImage(LOGO,'JPEG',M+3,Y+2,33,10); }catch(e){}
+  doc.setFont('helvetica','bold'); doc.setFontSize(10.5);
+  doc.text(TITULO, M+40+(W-84)/2, Y+hH/2+1, {align:'center', maxWidth:W-88});
+  doc.setFontSize(7.5);
+  doc.text(CODIGO, M+W-22, Y+hH/2+1, {align:'center'});
+  Y+=hH;
+
+  // ---------- datos de cabecera ----------
+  var h=6.4, x=M;
+  celda(x,Y,24,h,'CEDIS:',true,true); x+=24;
+  celda(x,Y,60,h,d.cedis); x+=60;
+  celda(x,Y,W-84,h,'Check List Diario',true,true,9.5,'c');
+  Y+=h; x=M;
+  celda(x,Y,24,h,'# de Placa:',true,true); x+=24;
+  celda(x,Y,60,h,d.placa,true,false,9.5); x+=60;
+  celda(x,Y,24,h,'# de Ruta:',true,true); x+=24;
+  celda(x,Y,W-108,h,d.ruta);
+  Y+=h; x=M;
+  celda(x,Y,24,h,'Fecha:',true,true); x+=24;
+  celda(x,Y,38,h,fechaBonita(d.fecha)); x+=38;
+  celda(x,Y,30,h,'Hora de Salida:',true,true); x+=30;
+  celda(x,Y,24,h,d.hsal,true,false,9,'c'); x+=24;
+  celda(x,Y,16,h,'KM:',true,true); x+=16;
+  celda(x,Y,W-132,h,d.kmsal,true,false,9.5);
+  Y+=h;
+
+  banda('Revisión al Vehículo previo a su Salida.',5.4);
+
+  // ---------- tabla de básicos ----------
+  var wL=7, wI=77, wC=19, wN=21, wM=W-wL-wI-wC-wN;
+  var yTab=Y;
+  celda(M,Y,wL,5,'',true,true);
+  celda(M+wL,Y,wI,5,'',true,true);
+  celda(M+wL+wI,Y,wC,5,'Cumple',true,true,8,'c');
+  celda(M+wL+wI+wC,Y,wN,5,'No Cumple',true,true,8,'c');
+  celda(M+wL+wI+wC+wN,Y,wM,5,'Comentario',true,true,8,'c');
+  Y+=5;
+  var hR=4.45;
+  for(var i2=0;i2<d.items.length;i2++){
+    var it=d.items[i2];
+    celda(M,Y,wL,hR,'');
+    celda(M+wL,Y,wI,hR,PUNTOS[i2],false,false,7.1);
+    celda(M+wL+wI,Y,wC,hR, it.res==='C'?'X':'', true,false,10,'c');
+    celda(M+wL+wI+wC,Y,wN,hR, it.res==='N'?'X':'', true,false,10,'c');
+    celda(M+wL+wI+wC+wN,Y,wM,hR, it.com,false,false,6.4);
+    Y+=hR;
+  }
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+  doc.text('BASICOS', M+wL/2+1.2, yTab+(Y-yTab)/2+11, {angle:90});
+
+  // ---------- comentarios salida + medidor ----------
+  var hCom=28, wGauge=52;
+  doc.rect(M,Y,W-wGauge,hCom);
+  doc.setFont('helvetica','bold'); doc.setFontSize(8);
+  doc.text('Comentarios sobre lo revisado:', M+2, Y+4.5);
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+  doc.text(doc.splitTextToSize(d.obsSal||'', W-wGauge-5), M+2, Y+9);
+  doc.rect(M+W-wGauge,Y,wGauge,hCom);
+  medidor(M+W-wGauge+7, Y+2, wGauge-14, d.combSal);
+  doc.setFont('helvetica','bold'); doc.setFontSize(7);
+  doc.text('Combustible: '+textoNivel(d.combSal), M+W-wGauge+wGauge/2, Y+hCom-2, {align:'center'});
+  Y+=hCom;
+
+  // ---------- conductor ----------
+  celda(M,Y,46,6,'Nombre del Conductor:',true,true); celda(M+46,Y,W-46,6,d.conductor,true); Y+=6;
+  celda(M,Y,46,6,'C.I.:',true,true); celda(M+46,Y,W-46,6,d.ciCond); Y+=6;
+  celda(M,Y,46,19,'Firma:',true,true); bloqueFirma(M+46,Y,W-46,19,d.fCond); Y+=19;
+
+  banda('Revisión al Vehículo a su Llegada.',5.4);
+
+  // ---------- hora / km llegada ----------
+  x=M;
+  celda(x,Y,34,h,'Hora de Entrada:',true,true); x+=34;
+  celda(x,Y,46,h,d.hent,true,false,9,'c'); x+=46;
+  celda(x,Y,16,h,'KM:',true,true); x+=16;
+  celda(x,Y,W-96,h,d.kment,true,false,9.5);
+  Y+=h;
+
+  // ---------- rayones / diagrama / medidor ----------
+  var hDia=38, wLeg=28;
+  doc.rect(M,Y,wLeg,hDia);
+  doc.setFont('helvetica','bold'); doc.setFontSize(7);
+  doc.text('RAYONES = /', M+2, Y+8);
+  doc.text('GOLPES = O', M+2, Y+13);
+  doc.text('ROTURAS = X', M+2, Y+18);
+  var wDia=W-wLeg-wGauge;
+  doc.rect(M+wLeg,Y,wDia,hDia);
+  var dw=wDia-5, dh=dw*ESQ_H/ESQ_W;
+  if(dh>hDia-3){ dh=hDia-3; dw=dh*ESQ_W/ESQ_H; }
+  dibujarEsquema(lienzoPDF(doc, M+wLeg+(wDia-dw)/2, Y+(hDia-dh)/2, dw/ESQ_W));
+  reset();
+  doc.rect(M+wLeg+wDia,Y,wGauge,hDia);
+  medidor(M+wLeg+wDia+3, Y+3.5, wGauge-6, d.combEnt);
+  doc.setFont('helvetica','bold'); doc.setFontSize(7);
+  doc.text('Combustible: '+textoNivel(d.combEnt), M+wLeg+wDia+wGauge/2, Y+hDia-2.5, {align:'center'});
+  Y+=hDia;
+
+  // ---------- aplica / no aplica ----------
+  var hAp=5.6;
+  doc.rect(M,Y,W,hAp);
+  doc.setFont('helvetica','bold'); doc.setFontSize(7.5);
+  doc.text('¿Presenta rayones, golpes o roturas?', M+2, Y+3.8);
+  doc.setFontSize(9);
+  doc.text((d.danos==='SI'?'[X]':'[  ]')+' APLICA', M+66, Y+3.9);
+  doc.text((d.danos==='NO'?'[X]':'[  ]')+' NO APLICA', M+100, Y+3.9);
+  doc.setFont('helvetica','normal'); doc.setFontSize(7);
+  if(d.danos==='SI') doc.text(fotosDanos.length+' fotografía(s) — ver anexo', M+142, Y+3.8);
+  Y+=hAp;
+
+  // ---------- comentarios llegada ----------
+  var hCl=14;
+  doc.rect(M,Y,W,hCl);
+  doc.setFont('helvetica','bold'); doc.setFontSize(8);
+  doc.text('Comentarios sobre lo revisado:', M+2, Y+4.5);
+  doc.setFont('helvetica','normal'); doc.setFontSize(7.5);
+  doc.text(doc.splitTextToSize(d.obsLle||'', W-5), M+2, Y+9);
+  Y+=hCl;
+
+  // ---------- receptor ----------
+  celda(M,Y,46,6,'Nombre del Receptor:',true,true); celda(M+46,Y,W-46,6,d.receptor,true); Y+=6;
+  celda(M,Y,46,6,'C.I.:',true,true); celda(M+46,Y,W-46,6,d.ciRec); Y+=6;
+  celda(M,Y,46,19,'Firma:',true,true); bloqueFirma(M+46,Y,W-46,19,d.fRec); Y+=19;
+
+  window.__finY = Y;
+
+  // ---------- línea de datos para Excel ----------
+  var res=''; for(var k2=0;k2<d.items.length;k2++) res += (d.items[k2].res||'-');
+  var L=limpiaLinea;
+  var linea='##DATA|'+[d.fecha,d.placa,d.ruta,d.cedis,d.hsal,d.kmsal,d.hent,d.kment,
+      d.combSal,d.combEnt,L(d.conductor),d.ciCond,L(d.receptor),d.ciRec,
+      res,(d.danos||'-'),fotosDanos.length,
+      (d.fCond?d.fCond.sello:''),(d.fRec?d.fRec.sello:''),
+      L(d.obsSal),L(d.obsLle)].join('|');
+  doc.setFontSize(6.5); doc.setTextColor(130);
+  doc.text(linea, M, 288, {maxWidth:W});
+  doc.setTextColor(0);
+
+  // ---------- anexo fotográfico ----------
+  var anexos=[];
+  if(fotoKmSal) anexos.push({cap:'Odómetro SALIDA — '+(d.kmsal||'')+' km · '+(d.hsal||''), f:fotoKmSal});
+  if(fotoKmEnt) anexos.push({cap:'Odómetro LLEGADA — '+(d.kment||'')+' km · '+(d.hent||''), f:fotoKmEnt});
+  for(var k3=0;k3<fotosDanos.length;k3++)
+    anexos.push({cap:'Daño '+(k3+1)+' de '+fotosDanos.length+' — rayones / golpes / roturas', f:fotosDanos[k3]});
+
+  for(var a2=0;a2<anexos.length;a2++){
+    if(a2%2===0){
+      doc.addPage('a4','portrait'); Y=M;
+      doc.setFont('helvetica','bold'); doc.setFontSize(11);
+      doc.text('ANEXO FOTOGRÁFICO — '+fechaBonita(d.fecha)+' — '+d.placa, M, Y+5);
+      doc.setLineWidth(0.3); doc.line(M,Y+7,M+W,Y+7);
+      Y+=10;
+    }
+    var slotY=(a2%2===0)? Y : 152;
+    var an=anexos[a2], maxH=116;
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5);
+    doc.text(an.cap, M, slotY+4);
+    var dw2=W, dh2=dw2*an.f.h/an.f.w;
+    if(dh2>maxH){ dh2=maxH; dw2=dh2*an.f.w/an.f.h; }
+    try{ doc.addImage(an.f.data,'JPEG', M+(W-dw2)/2, slotY+6, dw2, dh2); }catch(e){}
+    doc.setDrawColor(150); doc.setLineWidth(0.2);
+    doc.rect(M+(W-dw2)/2, slotY+6, dw2, dh2);
+    doc.setDrawColor(0);
+  }
+  return doc;
+}
+
+// ===================== VERSIÓN IMPRIMIBLE =====================
+function construirImpreso(){
+  var d=datos(), e=escHtml;
+  var filas='';
+  for(var i=0;i<d.items.length;i++){
+    filas+='<tr><td style="width:46%">'+e(PUNTOS[i])+'</td>'+
+      '<td style="width:10%;text-align:center;font-weight:bold">'+(d.items[i].res==='C'?'X':'')+'</td>'+
+      '<td style="width:10%;text-align:center;font-weight:bold">'+(d.items[i].res==='N'?'X':'')+'</td>'+
+      '<td>'+e(d.items[i].com)+'</td></tr>';
+  }
+  function fw(f){
+    if(!f) return '';
+    return '<div style="display:flex;gap:8px;align-items:center">'+
+      (f.img?'<img src="'+f.img+'" style="width:60px;height:60px">':'')+
+      '<div style="font-size:9px;line-height:1.4"><b>FIRMADO ELECTRÓNICAMENTE</b><br>'+
+      e(f.nombre)+'<br>C.I.: '+e(f.ci)+'<br>'+fechaBonita(f.sello)+'</div></div>';
+  }
+  var anex='';
+  function add(cap,f){ if(f) anex+='<div style="page-break-inside:avoid;margin-top:8px">'+
+      '<div style="font-weight:bold;font-size:10px">'+e(cap)+'</div>'+
+      '<img src="'+f.data+'" style="max-width:100%;max-height:110mm;border:1px solid #999"></div>'; }
+  add('Odómetro SALIDA — '+d.kmsal+' km', fotoKmSal);
+  add('Odómetro LLEGADA — '+d.kment+' km', fotoKmEnt);
+  for(var k=0;k<fotosDanos.length;k++) add('Daño '+(k+1), fotosDanos[k]);
+
+  var cs=document.getElementById('gSal').toDataURL('image/png');
+  var ce=document.getElementById('gEnt').toDataURL('image/png');
+  var cd=document.getElementById('diagCv').toDataURL('image/png');
+
+  document.getElementById('impreso').innerHTML=
+   '<style>.pt{width:100%;border-collapse:collapse;font-size:9px}.pt td,.pt th{border:1px solid #000;padding:2px 4px}'+
+   '.pk{font-weight:bold;background:#f2f2f2}.pb{background:#5a5a5a;color:#fff;text-align:center;font-weight:bold;padding:3px;font-size:10px}</style>'+
+   '<table class="pt"><tr>'+
+     '<td style="width:22%;text-align:center"><img src="'+LOGO+'" style="height:34px"></td>'+
+     '<td style="text-align:center;font-weight:bold;font-size:12px">'+e(TITULO)+'</td>'+
+     '<td style="width:22%;text-align:center;font-size:8px;font-weight:bold">'+CODIGO+'</td></tr></table>'+
+   '<table class="pt">'+
+     '<tr><td class="pk" style="width:14%">CEDIS:</td><td style="width:33%">'+e(d.cedis)+'</td>'+
+         '<td class="pk" colspan="2" style="text-align:center">Check List Diario</td></tr>'+
+     '<tr><td class="pk"># de Placa:</td><td><b>'+e(d.placa)+'</b></td>'+
+         '<td class="pk" style="width:14%"># de Ruta:</td><td>'+e(d.ruta)+'</td></tr>'+
+     '<tr><td class="pk">Fecha:</td><td>'+e(fechaBonita(d.fecha))+'</td>'+
+         '<td class="pk">Hora Salida / KM:</td><td>'+e(d.hsal)+' &nbsp;·&nbsp; <b>'+e(d.kmsal)+'</b></td></tr>'+
+   '</table>'+
+   '<div class="pb">Revisión al Vehículo previo a su Salida.</div>'+
+   '<table class="pt"><tr><th class="pk">BÁSICOS</th><th class="pk">Cumple</th><th class="pk">No Cumple</th><th class="pk">Comentario</th></tr>'+filas+
+     '<tr><td class="pk" colspan="3">Comentarios sobre lo revisado:</td>'+
+         '<td rowspan="2" style="text-align:center"><img src="'+cs+'" style="width:120px"><br>'+
+         '<b style="font-size:8px">Combustible: '+e(textoNivel(d.combSal))+'</b></td></tr>'+
+     '<tr><td colspan="3" style="height:34px;vertical-align:top">'+e(d.obsSal)+'</td></tr>'+
+     '<tr><td class="pk">Nombre del Conductor:</td><td colspan="3">'+e(d.conductor)+'</td></tr>'+
+     '<tr><td class="pk">C.I.:</td><td colspan="3">'+e(d.ciCond)+'</td></tr>'+
+     '<tr><td class="pk">Firma:</td><td colspan="3">'+fw(d.fCond)+'</td></tr>'+
+   '</table>'+
+   '<div class="pb">Revisión al Vehículo a su Llegada.</div>'+
+   '<table class="pt">'+
+     '<tr><td class="pk" style="width:20%">Hora de Entrada:</td><td style="width:27%">'+e(d.hent)+'</td>'+
+         '<td class="pk" style="width:10%">KM:</td><td><b>'+e(d.kment)+'</b></td></tr>'+
+     '<tr><td style="font-size:8px;font-weight:bold">RAYONES = /<br>GOLPES = O<br>ROTURAS = X</td>'+
+         '<td colspan="2" style="text-align:center"><img src="'+cd+'" style="max-width:200px"></td>'+
+         '<td style="text-align:center"><img src="'+ce+'" style="width:120px"><br>'+
+         '<b style="font-size:8px">Combustible: '+e(textoNivel(d.combEnt))+'</b></td></tr>'+
+     '<tr><td colspan="4" style="font-size:9px"><b>¿Presenta rayones, golpes o roturas?</b> &nbsp;&nbsp;'+
+         (d.danos==='SI'?'[X]':'[&nbsp;&nbsp;]')+' APLICA &nbsp;&nbsp; '+
+         (d.danos==='NO'?'[X]':'[&nbsp;&nbsp;]')+' NO APLICA'+
+         (d.danos==='SI'?(' &nbsp;— '+fotosDanos.length+' fotografía(s), ver anexo'):'')+'</td></tr>'+
+     '<tr><td class="pk" colspan="4">Comentarios sobre lo revisado:</td></tr>'+
+     '<tr><td colspan="4" style="height:34px;vertical-align:top">'+e(d.obsLle)+'</td></tr>'+
+     '<tr><td class="pk">Nombre del Receptor:</td><td colspan="3">'+e(d.receptor)+'</td></tr>'+
+     '<tr><td class="pk">C.I.:</td><td colspan="3">'+e(d.ciRec)+'</td></tr>'+
+     '<tr><td class="pk">Firma:</td><td colspan="3">'+fw(d.fRec)+'</td></tr>'+
+   '</table>'+
+   (anex?('<div style="page-break-before:always"><h3 style="font-size:12px">ANEXO FOTOGRÁFICO — '+
+          e(fechaBonita(d.fecha))+' — '+e(d.placa)+'</h3>'+anex+'</div>'):'');
+}
+
+// ===================== BOTONES =====================
+document.getElementById('btnShare').addEventListener('click', function(){
+  var v=validar(); if(!v.ok) return;
+  var err=document.getElementById('err');
+  err.style.color='#666'; err.textContent='Generando PDF...';
+  setTimeout(function(){
+    try{
+      if(!(window.jspdf && window.jspdf.jsPDF)) throw new Error('sin-libreria');
+      var doc=construirPDF();
+      var nombre=v.fecha+'_'+soloAlfaNum(v.placa)+'.pdf';
+      var blob=doc.output('blob');
+      var file=new File([blob], nombre, {type:'application/pdf'});
+      var texto='Check list vehicular — '+fechaBonita(v.fecha)+' — '+v.placa+(v.completo?'':' (solo salida)');
+      if(navigator.canShare && navigator.canShare({files:[file]})){
+        navigator.share({files:[file], title:nombre, text:texto}).then(function(){
+          err.textContent='';
+          if(v.completo){ limpiarGuardado(); err.style.color='#1e7d34';
+            err.textContent='✓ Check list completo enviado. Puedes cerrar la página.'; }
+        }).catch(function(){ err.textContent=''; });
+      }else{
+        doc.save(nombre);
+        err.style.color='#666';
+        err.textContent='PDF descargado. Adjúntalo al grupo de WhatsApp.';
+        if(v.completo) limpiarGuardado();
+      }
+    }catch(e){
+      err.style.color='#c62828';
+      err.textContent='No se pudo generar. Usa "versión imprimible".';
+    }
+  },30);
+});
+
+document.getElementById('btnPrint').addEventListener('click', function(){
+  var v=validar(); if(!v.ok) return;
+  construirImpreso();
+  document.title=v.fecha+'_'+soloAlfaNum(v.placa);
+  var imgs=document.querySelectorAll('#impreso img');
+  var pend=imgs.length;
+  if(!pend){ setTimeout(function(){ window.print(); },150); return; }
+  for(var i=0;i<imgs.length;i++){
+    if(imgs[i].complete && imgs[i].naturalWidth>0){ if(--pend===0) setTimeout(function(){ window.print(); },200); }
+    else {
+      imgs[i].onload=imgs[i].onerror=function(){ if(--pend===0) setTimeout(function(){ window.print(); },200); };
+    }
+  }
+});
+
+restaurar();
+
+// ===================== DIAGNÓSTICO VISIBLE =====================
+(function(){
+  var el=document.getElementById('diag'); if(!el) return;
+  var chk=['JS activo','Puntos: '+document.querySelectorAll('.item').length+'/16'];
+  var alm='bloqueado';
+  try{ localStorage.setItem('__t','1'); localStorage.removeItem('__t'); alm='OK'; }catch(e){}
+  chk.push('Guardado: '+alm);
+  var qrok='falla';
+  try{ if(QR.generar('PRUEBA').length>0) qrok='OK'; }catch(e){}
+  chk.push('QR firma: '+qrok);
+  function pintar(est){
+    el.innerHTML=chk.join(' · ')+' · PDF: '+est;
+    var bien = est.indexOf('OK')===0;
+    el.style.background = bien?'#e8f5e9':'#fff3e0';
+    el.style.color      = bien?'#1b5e20':'#8a5100';
+  }
+  function revisar(n){
+    if(window.jspdf && window.jspdf.jsPDF){ pintar('OK'); return; }
+    if(n<=0 || window.__pdfFallo){ pintar('NO CARGÓ — sin internet o bloqueado. Usa “versión imprimible”.'); return; }
+    setTimeout(function(){ revisar(n-1); },500);
+  }
+  revisar(24);
+})();
+</script>
+</body>
+</html>
